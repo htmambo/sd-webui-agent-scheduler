@@ -476,6 +476,12 @@ class TaskRunner:
 
     def __execute_api_task(self, task_id: str, is_img2img: bool, **kwargs):
         progress.start_task(task_id)
+        # forge 有个bug就是override_settings里指定sd_model_checkpoint并不生效，所以需要手动设置
+        override: Dict = kwargs.get("override_settings", {})
+        checkpoint = override.get("sd_model_checkpoint", None)
+        # 如果 checkpoint 有内容且不是None，则生成一个json { 'sd_model_checkpoint': checkpoint } 来请求 self__api.setconfig
+        if checkpoint:
+            self.__api.set_config({"sd_model_checkpoint": checkpoint})
 
         res = None
         try:
